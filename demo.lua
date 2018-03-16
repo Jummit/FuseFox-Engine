@@ -1,7 +1,7 @@
 os.loadAPI("engine")
 
 elements = {
-  player = engine.elements.sprite({
+  player = {
     fruits = 0,
     path = "player.nfp",
     x = 10, y = 10,
@@ -16,6 +16,7 @@ elements = {
       term.setTextColor(colors.blue)
       term.setCursorPos(1, 1)
       term.write("Fruits collected: "..self.fruits)
+      paintutils.drawPixel(self.x, self.y, colors.blue)
     end,
     update = function(self)
       for key, move in pairs(self.moves) do
@@ -30,7 +31,7 @@ elements = {
         self.fruits = self.fruits + 1
       end
     end
-  }),
+  },
   tilemap = engine.elements.tilemap({
     dynamicLight = false,
     lightUpdateTime=1,
