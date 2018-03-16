@@ -10,6 +10,7 @@ Features:
 * Event handler
 * Buffer
 * Error handler
+* Game lifecyle manager
 
 Here is a simple program:
 ``` lua

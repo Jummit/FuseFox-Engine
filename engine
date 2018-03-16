@@ -27,6 +27,7 @@ eventHandler = {
   end,
   char = function(char)
     keyboard.lastChar = char
+    keyboard.newChar = true
   end
 }
 
@@ -65,8 +66,6 @@ newElement = function(elementTab)
   end
 end
 elements = {
-  tileset = newElement({
-  }),
   tilemap = newElement({
     generated = false,
     getTile = function(self, x, y)
@@ -207,6 +206,7 @@ update = function(elements, wantedDt, func)
   os.cancelTimer(timer)
 
   if event ~= "mouse_drag" then mouse.isDragged = false end
+  if event ~= "char" then keyboard.newChar = false end
   if eventHandler[event] then eventHandler[event](var1, var2, var3) end
 
   if os.clock()-lastUpdate >= wantedDt then

@@ -25,10 +25,10 @@ elements = {
   tilemap = engine.elements.tilemap({
     dynamicLight = true,
     lightSource = {x=3, y=3},
-    tileset = engine.elements.tileset({
+    tileset = {
       floor = {bc=colors.green,tc=colors.gray,char=" "},
       wall = {bc=colors.gray,tc=colors.lightGray,char=" ",solid=true}
-    }),
+    },
     generate = function(self)
       elements.tilemap:setRectangle(1, 1, engine.width, engine.height, "floor")
       elements.tilemap:setRectangle(4, 4, 6, 4, "wall")
