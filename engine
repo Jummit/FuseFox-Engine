@@ -41,6 +41,7 @@ dynamicLight.lightPixel = function(self, x, y)
   local eightDegree = math.floor(degree/45)
 
   local tileX, tileY = x-dynamicLight.positions[eightDegree][1], y-dynamicLight.positions[eightDegree][2]
+  if not (self.light[tileX] and self[tileX] and self[tileX][tileY]) then return end
   if self[tileX] and self[x] then
     if self.light[tileX][tileY] == true and not self[tileX][tileY].solid then
       self.light[x][y] = true
@@ -88,6 +89,7 @@ elements = {
     end,
     [1] = {},
     light = {},
+    lightUpdateTime = 7,
     DRAW = function(self)
       for y = 1, #self[1] do
         term.setCursorPos(1, y)
@@ -127,9 +129,11 @@ elements = {
           end
         end
 
-        for x = 1, #self do
-          for y = 1, #self[1] do
-            dynamicLight.lightPixel(self, x, y)
+        for i = 1, self.lightUpdateTime do
+          for x = 1, #self do
+            for y = 1, #self[1] do
+              dynamicLight.lightPixel(self, x, y)
+            end
           end
         end
       end
