@@ -50,5 +50,7 @@ while true do
 end
 
 ```
+Here is the demo game in action:
+![alt-text](https://i.imgur.com/1kixxsB.png "Demo Game")
 Here is an example of raytracing:
-![alt-text](https://i.imgur.com/DlRCuUj.png "Example Game")
+![alt-text](https://i.imgur.com/DlRCuUj.png "Raytracing Game")
