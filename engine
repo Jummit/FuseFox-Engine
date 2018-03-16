@@ -1,5 +1,23 @@
 width, height = term.getSize()
 
+local arguments = {...}
+if arguments and arguments[1] then
+  local outputPath = arguments[2] or arguments[1]..".pin"
+  local gameFile = fs.open(arguments[1], "r")
+  local game = gameFile:readAll()
+  gameFile.close()
+  local engineFile = fs.open("engine", "r")
+  local engine = engineFile.readAll()
+  engineFile.close()
+
+  local outputFile = fs.open(outputPath, "w")
+  outputFile.write(engine)
+  outputFile.write("\n\nengine=getfenv()\n-- Game Code")
+  outputFile.write(game)
+  outputFile.close()
+  print("Exported game "..arguments[1].." to "..outputPath.." successfully")
+end
+
 -- EVENT HANDLER MODULE
 mouse = {x = 0, y = 0}
 keyboard = {lastChar = ""}
