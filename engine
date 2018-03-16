@@ -1,0 +1,246 @@
+width, height = term.getSize()
+
+-- EVENT HANDLER MODULE
+mouse = {x = 0, y = 0}
+keyboard = {lastChar = ""}
+eventHandler = {
+  mouse_click = function(button, x, y)
+    mouse.x, mouse.y = x, y
+    mouse.isDown = true
+  end,
+  mouse_up = function(button, x, y)
+    mouse.x, mouse.y = x, y
+    mouse.isDown = false
+    mouse.isDragged = false
+  end,
+  mouse_drag = function(button, x, y)
+    mouse.x, mouse.y = x, y
+    mouse.isDown = true
+    mouse.dragX, mouse.dragY = x, y
+  end,
+
+  key = function(key)
+    keyboard[keys.getName(key)] = true
+  end,
+  key_up = function(key)
+    keyboard[keys.getName(key)] = false
+  end,
+  char = function(char)
+    keyboard.lastChar = char
+  end
+}
+
+-- DYNAMIC LIGHT MODULE
+dynamicLight = {}
+dynamicLight.positions = {
+  [0] = {0, -1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}
+}
+dynamicLight.lightPixel = function(self, x, y)
+  local degree = math.deg(math.atan2(self.lightSource.x-x, self.lightSource.y-y))+180
+  local eightDegree = math.floor(degree/45)
+
+  local tileX, tileY = x-dynamicLight.positions[eightDegree][1], y-dynamicLight.positions[eightDegree][2]
+  if self[tileX] and self[x] then
+    if self.light[tileX][tileY] == true and not self[tileX][tileY].solid then
+      self.light[x][y] = true
+    else
+      self.light[x][y] = false
+    end
+  end
+end
+
+
+-- ELEMENT MODULE
+isBoxClicked = function(box)
+  return mouse.isDown and box.x<=mouse.x and box.y<=mouse.y and box.x+box.w>mouse.x and box.y+box.h>mouse.y
+end
+newElement = function(elementTab)
+  return function(tab)
+    return setmetatable(
+      tab,
+      {
+        __index = elementTab
+      }
+    )
+  end
+end
+elements = {
+  tileset = newElement({
+  }),
+  tilemap = newElement({
+    generated = false,
+    getTile = function(self, x, y)
+      if self[x] then
+        return self[x][y]
+      else
+        return {}
+      end
+    end,
+    setTile = function(self, x, y, tile)
+      if not self[x] then self[x] = {} end
+      self[x][y] = self.tileset[tile]
+    end,
+    setRectangle = function(self, rx, ry, w, h, tile)
+      for x = rx, rx+w do
+        for y = ry, ry+h do
+          self:setTile(x, y, tile)
+        end
+      end
+    end,
+    [1] = {},
+    light = {},
+    DRAW = function(self)
+      term.setCursorPos(1, 1)
+      for y = 1, #self[1] do
+        for x = 1, #self do
+          local tile = self[x][y]
+          if tile then
+            if self.dynamicLight and not tile.solid and not self.light[x][y] then
+              term.setBackgroundColor(colors.black)
+              term.write(" ")
+            else
+              term.setBackgroundColor(tile.bc)
+              term.setTextColor(tile.tc)
+              term.write(tile.char)
+            end
+          else
+            term.write(" ")
+          end
+        end
+        term.setCursorPos(1, y)
+      end
+    end,
+    UPDATE = function(self)
+      if self.generate and not self.generated then
+        self:generate()
+        self.generated = true
+        if self.dynamicLight then
+          for x = 1, #self do
+            self.light[x] = {}
+          end
+        end
+      end
+      if self.dynamicLight then
+        for x = 1, 3 do
+          for y = 1, 3 do
+            self.light[self.lightSource.x+x-2][self.lightSource.y+y-2] = true
+          end
+        end
+
+        for x = 1, #self do
+          for y = 1, #self[1] do
+            dynamicLight.lightPixel(self, x, y)
+          end
+        end
+      end
+    end
+  }),
+  button = newElement({
+    UPDATE = function(self)
+      if isBoxClicked(self) then
+        if not self.clicked and self.clickedFunction then self:clickedFunction() end
+        self.clicked = true
+      else
+        self.clicked = false
+      end
+    end,
+    DRAW = function(self)
+      if self.clicked then
+        term.setBackgroundColor(colors.white)
+        term.setTextColor(colors.lightGray)
+      else
+        term.setBackgroundColor(colors.lightGray)
+        term.setTextColor(colors.gray)
+      end
+      paintutils.drawFilledBox(self.x, self.y, self.w+self.x-1, self.h+self.y-1)
+      term.setCursorPos(self.x+self.w/2-#self.label/2, self.y+self.h/2)
+      term.write(self.label)
+    end
+  }),
+  sprite = newElement({
+    path = "",
+    DRAW = function(self)
+      if not self.image then
+        self.image = paintutils.loadImage(self.path)
+        self.w = #self.image[1]
+        self.h = #self.image
+      end
+      paintutils.drawImage(self.image, self.x, self.y)
+    end
+  }),
+  template = newElement({
+    UPDATE = function(self)
+    end,
+    DRAW = function(self)
+    end
+  }),
+}
+
+
+-- LIFECYCLE FUNCTIONS
+lastUpdate = os.clock()
+runProtected = function(func)
+  local succ, mess = pcall(func)
+  if not succ then
+    quit(mess)
+  end
+end
+update = function(elements, wantedDt, func)
+  runProtected(function()
+  local timer = os.startTimer(wantedDt)
+  local event, var1, var2, var3 = os.pullEventRaw()
+  if event == "terminate" then quit(true) end
+  os.cancelTimer(timer)
+
+  if event ~= "mouse_drag" then mouse.isDragged = false end
+  if eventHandler[event] then eventHandler[event](var1, var2, var3) end
+
+  if os.clock()-lastUpdate >= wantedDt then
+    for elementName, element in pairs(elements) do
+      if element.UPDATE then
+        element:UPDATE()
+      end
+      if element.update then
+        element:update()
+      end
+    end
+    if func then func() end
+    lastUpdate = os.clock()
+  end
+  end)
+end
+buffer = window.create(term.current(), 1, 1, width, height)
+draw = function(elements, func)
+  runProtected(function()
+  buffer.setVisible(false)
+  local oldterm = term.redirect(buffer)
+  term.setBackgroundColor(colors.black)
+  term.clear()
+  for elementName, element in pairs(elements) do
+    if element.DRAW then
+      element:DRAW()
+    end
+  end
+  if func then func() end
+  buffer.setVisible(true)
+  term.redirect(oldterm)
+  end)
+end
+quit = function(hard)
+  buffer.setVisible(true)
+  term.setBackgroundColor(colors.black)
+  term.setTextColor(colors.yellow)
+  term.clear()
+  term.setCursorPos(1, 1)
+  print("Thanks for using the Pektar Game Engine by Jummit!")
+  if type(hard) == "string" then
+    print("The game crashed! Here is the error:")
+    term.setTextColor(colors.red)
+    print(hard)
+  elseif hard then
+    print("The game was forcefully closed")
+  else
+    print("The game was closed without any errors")
+  end
+  if hard then error("", 0) end
+end
