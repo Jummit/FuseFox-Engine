@@ -13,8 +13,9 @@ elements = {
     update = function(self)
       for key, move in pairs(self.moves) do
         if engine.keyboard[key] then
-          self.x = self.x + move[1]
-          self.y = self.y + move[2]
+          self:moveTo(elements.tilemap, move[1], move[2])
+          --self.x = self.x + move[1]
+          --self.y = self.y + move[2]
         end
       end
       elements.tilemap.lightSource.x = self.x
