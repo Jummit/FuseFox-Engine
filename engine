@@ -75,7 +75,10 @@ moveTo = function(self, tilemap, xmove, ymove)
   local canMove = true
   for x = 1, self.w do
     for y = 1, self.h do
-      local tile = tilemap:getTile(self.x+xmove+x-1, self.y+ymove+y-1)
+      local moveToX = self.x+xmove+y-1
+      local moveToY = self.y+ymove+y-1
+      if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
+      local tile = tilemap:getTile(moveToX, moveToY)
       if (not tile) or tile.solid then canMove = false end
     end
   end
