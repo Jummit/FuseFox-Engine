@@ -12,7 +12,9 @@ Features:
 * Error handler
 * Game lifecyle manager
 
-Here is a simple program:
+## [Check out the wiki to get started!](https://github.com/Jummit/Pinwyn-Engine/wiki)
+
+## Here is a simple program:
 ``` lua
 -- Load the engine
 os.loadAPI("engine")
@@ -50,7 +52,7 @@ while true do
 end
 
 ```
-Here is the demo game in action:
+## Here is the demo game in action:
 ![alt-text](https://i.imgur.com/1kixxsB.png "Demo Game")
-Here is an example of raytracing:
+## Here is an example of raytracing:
 ![alt-text](https://i.imgur.com/DlRCuUj.png "Raytracing Game")
