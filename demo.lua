@@ -29,6 +29,13 @@ elements = {
       if elements.tilemap[self.x][self.y].tile == "fruit" then
         elements.tilemap:setTile(self.x, self.y, "floor")
         self.fruits = self.fruits + 1
+        while true do
+          local fx, fy = math.random(1, engine.width), math.random(1, engine.height)
+          if elements.tilemap:getTile(fx, fy).tile == "floor" then
+            elements.tilemap:setTile(fx, fy, "fruit")
+            break
+          end
+        end
       end
     end
   },
