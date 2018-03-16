@@ -79,6 +79,7 @@ elements = {
     setTile = function(self, x, y, tile)
       if not self[x] then self[x] = {} end
       self[x][y] = self.tileset[tile]
+      self[x][y].tile = tile
     end,
     setRectangle = function(self, rx, ry, w, h, tile)
       for x = rx, rx+w do
@@ -165,10 +166,10 @@ elements = {
     path = "",
     moveTo = function(self, tilemap, xmove, ymove)
       local canMove = true
-      for x = 0, self.w-1 do
-        for y = 0, self.h-1 do
-          local tile = tilemap:getTile(self.x+xmove+x, self.y+ymove+y)
-          if not tile or tile.solid then canMove = false end
+      for x = 1, self.w do
+        for y = 1, self.h do
+          local tile = tilemap:getTile(self.x+xmove+x-1, self.y+ymove+y-1)
+          if (not tile) or tile.solid then canMove = false end
         end
       end
       if canMove then
@@ -237,6 +238,9 @@ draw = function(elements, func)
   for elementName, element in pairs(elements) do
     if element.DRAW then
       element:DRAW()
+    end
+    if element.draw then
+      element:draw()
     end
   end
   if func then func() end
