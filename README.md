@@ -4,6 +4,7 @@ A game engine for Computercraft
 Features:
 * Tilemaps
 * Raytracing for tilemaps
+* pixel-precise collision with tilemaps
 * Sprites
 * Buttons
 * Event handler
