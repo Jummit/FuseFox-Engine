@@ -1,0 +1,8 @@
+local demo = http.get("https://raw.githubusercontent.com/Jummit/Pinwyn-Engine/master/demo.lua").readAll()
+local engine = http.get("https://raw.githubusercontent.com/Jummit/Pinwyn-Engine/master/engine").readAll()
+local file = fs.open("engine", "w")
+file.write(engine)
+file:close()
+local file = fs.open("demo", "w")
+file.write(demo)
+file:close()
