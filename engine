@@ -53,6 +53,19 @@ end
 
 
 -- ELEMENT MODULE
+moveTo = function(self, tilemap, xmove, ymove)
+  local canMove = true
+  for x = 1, self.w do
+    for y = 1, self.h do
+      local tile = tilemap:getTile(self.x+xmove+x-1, self.y+ymove+y-1)
+      if (not tile) or tile.solid then canMove = false end
+    end
+  end
+  if canMove then
+    self.x = self.x + xmove
+    self.y = self.y + ymove
+  end
+end
 isBoxClicked = function(box)
   return mouse.isDown and box.x<=mouse.x and box.y<=mouse.y and box.x+box.w>mouse.x and box.y+box.h>mouse.y
 end
@@ -164,19 +177,6 @@ elements = {
   }),
   sprite = newElement({
     path = "",
-    moveTo = function(self, tilemap, xmove, ymove)
-      local canMove = true
-      for x = 1, self.w do
-        for y = 1, self.h do
-          local tile = tilemap:getTile(self.x+xmove+x-1, self.y+ymove+y-1)
-          if (not tile) or tile.solid then canMove = false end
-        end
-      end
-      if canMove then
-        self.x = self.x + xmove
-        self.y = self.y + ymove
-      end
-    end,
     DRAW = function(self)
       if not self.image then
         self.image = paintutils.loadImage(self.path)

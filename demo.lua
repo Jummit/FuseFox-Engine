@@ -4,7 +4,7 @@ elements = {
   player = {
     fruits = 0,
     path = "player.nfp",
-    x = 10, y = 10,
+    x = 10, y = 10, w = 1, h = 1,
     moves = {
       up =  {0, -1},
       down= {0,  1},
@@ -21,7 +21,7 @@ elements = {
     update = function(self)
       for key, move in pairs(self.moves) do
         if engine.keyboard[key] then
-          self:moveTo(elements.tilemap, move[1], move[2])
+          engine.moveTo(self, elements.tilemap, move[1], move[2])
         end
       end
       elements.tilemap.lightSource.x = self.x
