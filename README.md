@@ -4,13 +4,15 @@ A game engine for Computercraft
 Features:
 * Tilemaps
 * Raytracing for tilemaps
-* pixel-precise collision with tilemaps
+* Save and load feature for tilemaps
+* Pixel-precise collision with tilemaps
 * Sprites
 * Buttons
 * Event handler
 * Buffer
 * Error handler
-* Game lifecyle manager
+* Game lifecycle manager
+* A big and usefull wiki
 
 ## [Check out the wiki to get started!](https://github.com/Jummit/Pinwyn-Engine/wiki)
 
