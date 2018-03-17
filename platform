@@ -65,5 +65,12 @@ elements = {
 
 while true do
   engine.update(elements, 0.06, function() if engine.keyboard.q then engine.quit() end end)
-  engine.draw(elements)
+  engine.draw(elements, function()
+    term.setBackgroundColor(colors.gray)
+    term.setTextColor(colors.white)
+    term.setCursorPos(3, 16)
+    term.write("Press k to save and l to load")
+    term.setCursorPos(3, 17)
+    term.write("WASD and arrow keys to move")
+  end)
 end
