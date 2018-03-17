@@ -14,7 +14,7 @@ elements = {
         self.jumpedHeight = 0
       end
       local jumped
-      if engine.keyboard.up then
+      if engine.keyboard.up or engine.keyboard.w then
         self.jumpedHeight = self.jumpedHeight + 1
         if self.jumpedHeight<self.jumpHeight then
           jumped = true
@@ -25,7 +25,7 @@ elements = {
       else
         self.jumpedHeight = self.jumpHeight
       end
-      if engine.keyboard.down then
+      if engine.keyboard.down or engine.keyboard.s then
         self.image[1][1] = nil
       elseif not elements.tilemap:getTile(self.x, self.y).solid then
         self.image[1][1] = 1
@@ -33,8 +33,8 @@ elements = {
       if not jumped then
         engine.moveTo(self, elements.tilemap, 0, 1)
       end
-      if engine.keyboard.left then engine.moveTo(self, elements.tilemap, -1, 0) end
-      if engine.keyboard.right then engine.moveTo(self, elements.tilemap, 1, 0) end
+      if engine.keyboard.left or engine.keyboard.a then engine.moveTo(self, elements.tilemap, -1, 0) end
+      if engine.keyboard.right or engine.keyboard.d then engine.moveTo(self, elements.tilemap, 1, 0) end
     end
   }),
   tilemap = engine.elements.tilemap({
@@ -54,7 +54,7 @@ elements = {
       if engine.mouse.isDown then
         self:setTile(engine.mouse.x, engine.mouse.y, "wall")
       end
-      if engine.keyboard.s then
+      if engine.keyboard.k then
         self:saveTilemap("mapsave")
       elseif engine.keyboard.l then
         self:loadTilemap("mapsave")
