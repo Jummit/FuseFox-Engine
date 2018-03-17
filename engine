@@ -15,26 +15,32 @@ if arguments and arguments[1] then
   outputFile.write("\n\nengine=getfenv()\n-- Game Code")
   outputFile.write(game)
   outputFile.close()
+  term.setTextColor(colors.green)
   print("Exported game "..arguments[1].." to "..outputPath.." successfully")
+  error("", 0)
 end
 
 -- EVENT HANDLER MODULE
+local mouseKeys = {"left", "right", "other"}
 mouse = {x = 0, y = 0}
 keyboard = {lastChar = ""}
 eventHandler = {
   mouse_click = function(button, x, y)
     mouse.x, mouse.y = x, y
     mouse.isDown = true
+    mouse.button = mouseKeys[button]
   end,
   mouse_up = function(button, x, y)
     mouse.x, mouse.y = x, y
     mouse.isDown = false
     mouse.isDragged = false
+    mouse.button = mouseKeys[button]
   end,
   mouse_drag = function(button, x, y)
     mouse.x, mouse.y = x, y
     mouse.isDown = true
     mouse.dragX, mouse.dragY = x, y
+    mouse.button = mouseKeys[button]
   end,
 
   key = function(key)
@@ -122,9 +128,14 @@ elements = {
       file.close()
     end,
     loadTilemap = function(self, path)
-      local file = fs.open(path..".til", "r")
-      tilemapData = file.readAll()
-      tilemapTab = textutils.unserialize(tilemapData)
+      local tilemapTab
+      if type(path) == "table" then
+        tilemapTab = path
+      else
+        local file = fs.open(path..".til", "r")
+        local tilemapData = file.readAll()
+        tilemapTab = textutils.unserialize(tilemapData)
+      end
       for x = 1, #tilemapTab do
         for y = 1, #tilemapTab[x] do
           self:setTile(x, y, tilemapTab[x][y])
