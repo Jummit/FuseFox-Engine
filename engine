@@ -72,22 +72,26 @@ end
 
 -- ELEMENT MODULE
 moveTo = function(self, tilemap, xmove, ymove)
-  local canMove = true
-  for x = 1, self.w do
-    for y = 1, self.h do
-      if (self.image and self.image[y][x]) or not self.image then
-        local moveToX = self.x+xmove+x-1
-        local moveToY = self.y+ymove+y-1
-        if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
-        local tile = tilemap:getTile(moveToX, moveToY)
-        if (not tile) or tile.solid then canMove = false end
+  local couldMove = true
+  for move = 1, math.abs(xmove)+math.abs(ymove) do
+    local canMove = true
+    for x = 1, self.w do
+      for y = 1, self.h do
+        if (self.image and self.image[y][x]) or not self.image then
+          local moveToX = self.x+xmove+x-1
+          local moveToY = self.y+ymove+y-1
+          if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
+          local tile = tilemap:getTile(moveToX, moveToY)
+          if (not tile) or tile.solid then couldMove = false canMove = false end
+        end
       end
     end
+    if canMove then
+      self.x = self.x + xmove
+      self.y = self.y + ymove
+    end
   end
-  if canMove then
-    self.x = self.x + xmove
-    self.y = self.y + ymove
-  end
+  return couldMove
 end
 isBoxClicked = function(box)
   return mouse.isDown and box.x<=mouse.x and box.y<=mouse.y and box.x+box.w>mouse.x and box.y+box.h>mouse.y
@@ -104,6 +108,29 @@ newElement = function(elementTab)
 end
 elements = {
   tilemap = newElement({
+    saveTilemap = function(self, path)
+      local tileTab = {}
+      for x = 1, #self do
+        tileTab[x] = {}
+        for y = 1, #self[x] do
+          tileTab[x][y] = self[x][y].tile
+        end
+      end
+      local file = fs.open(path..".til", "w")
+      local tilemapData = textutils.serialize(tileTab)
+      file.write(tilemapData)
+      file.close()
+    end,
+    loadTilemap = function(self, path)
+      local file = fs.open(path..".til", "r")
+      tilemapData = file.readAll()
+      tilemapTab = textutils.unserialize(tilemapData)
+      for x = 1, #tilemapTab do
+        for y = 1, #tilemapTab[x] do
+          self:setTile(x, y, tilemapTab[x][y])
+        end
+      end
+    end,
     generated = false,
     getTile = function(self, x, y)
       if self[x] then
