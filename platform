@@ -1,6 +1,7 @@
 os.loadAPI("engine")
 
-level = {
+local gameEnded = false
+local level = {
   {
     "wall",
     "wall",
@@ -1148,13 +1149,17 @@ level = {
 }
 elements = {
   player = engine.elements.sprite({
+    priority = true,
     image = {{1}, {1}}, w = 1, h = 2,
     gravity = 0.5,
-    x = 2, y = 18,
+    x = 3, y = 16,
     move = {x = 0, y = 0},
     jumpHeight = 6,
     jumpedHeight = 0,
     update = function(self)
+      if self.x == 4 and self.y == 4 then
+        gameEnded = true
+      end
       local tile = elements.tilemap:getTile(self.x, self.y+2)
       if tile and tile.solid then
         self.jumpedHeight = 0
@@ -1211,17 +1216,59 @@ elements = {
         self:setRectangle(2, 2, engine.width-3, engine.height-3, "floor")
       end
     end
-  })
+  }),
+  timer = {
+    priority = true,
+    time = 0,
+    red = false,
+    draw = function(self)
+      term.setCursorPos(engine.width-10, 1)
+      term.setBackgroundColor(colors.gray)
+      if self.red then
+        term.setTextColor(colors.red)
+      else
+        term.setTextColor(colors.yellow)
+      end
+      term.write("time: "..self.time)
+    end,
+    update = function(self)
+      self.red = not self.red
+      if not gameEnded then
+        self.time = self.time+0.1
+      end
+    end
+  },
+  hint = {
+    draw = function()
+      term.setBackgroundColor(colors.gray)
+      term.setTextColor(colors.white)
+      term.setCursorPos(2, engine.height)
+      term.write("Press k to save, l to load and c to clear")
+      term.setCursorPos(2, 1)
+      term.write("WASD and arrow keys to move")
+    end
+  },
+  endScreen = {
+      update = function()
+        if gameEnded then
+          elements.player = nil
+        end
+      end,
+      draw = function()
+        if gameEnded then
+          paintutils.drawFilledBox(8, 7, engine.width-7, engine.height-5, colors.lightBlue)
+          term.setCursorPos(10, 10)
+          term.setBackgroundColor(colors.lightBlue)
+          term.setTextColor(colors.white)
+          print("You won! Youre time was "..elements.timer.time)
+          term.setCursorPos(8, 12)
+          print("You can share your time on the forum!")
+        end
+      end
+  }
 }
 
 while true do
   engine.update(elements, 0.06, function() if engine.keyboard.q then engine.quit() end end)
-  engine.draw(elements, function()
-    term.setBackgroundColor(colors.gray)
-    term.setTextColor(colors.white)
-    term.setCursorPos(2, engine.height)
-    term.write("Press k to save, l to load and c to clear")
-    term.setCursorPos(2, 1)
-    term.write("WASD and arrow keys to move")
-  end)
+  engine.draw(elements)
 end
