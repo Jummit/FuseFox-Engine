@@ -2,9 +2,10 @@ os.loadAPI("engine")
 
 elements = {
   player = {
+    priority = 1,
     fruits = 0,
     path = "player.nfp",
-    x = 10, y = 10, w = 1, h = 1,
+    x = 5, y = 5, w = 1, h = 1,
     moves = {
       up =  {0, -1},
       down= {0,  1},
@@ -26,7 +27,7 @@ elements = {
       end
       elements.tilemap.lightSource.x = self.x
       elements.tilemap.lightSource.y = self.y
-      if elements.tilemap[self.x][self.y].tile == "fruit" then
+      if elements.tilemap[self.x] and elements.tilemap[self.x][self.y].tile == "fruit" then
         elements.tilemap:setTile(self.x, self.y, "floor")
         self.fruits = self.fruits + 1
         while true do
@@ -39,6 +40,16 @@ elements = {
       end
     end
   },
+  --[[cow = {
+    x = 5, y = 10, w = 1, h = 1, move = {1, 0}, isMoving = true,
+    draw = function(self)
+      paintutils.drawPixel(self.x, self.y, colors.black)
+    end,
+    update = function(self)
+      if math.random(1, 10) == 1 then self.isMoving = not self.isMoving end
+      if math.random(1, 10) == 1 then self.move[math.random(1, 2)] = math.random(0, 1) end
+    end
+  },]]
   tilemap = engine.elements.tilemap({
     dynamicLight = false,
     lightUpdateTime=1,
@@ -69,9 +80,11 @@ elements = {
 }
 
 while not exit do
+  local start = os.clock()
   engine.update(elements, 0.06, function()
     if engine.keyboard.q then exit = true end
   end)
+  local middle = os.clock()
   engine.draw(elements)
 end
 engine.quit()
