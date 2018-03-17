@@ -75,11 +75,13 @@ moveTo = function(self, tilemap, xmove, ymove)
   local canMove = true
   for x = 1, self.w do
     for y = 1, self.h do
-      local moveToX = self.x+xmove+y-1
-      local moveToY = self.y+ymove+y-1
-      if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
-      local tile = tilemap:getTile(moveToX, moveToY)
-      if (not tile) or tile.solid then canMove = false end
+      if (self.image and self.image[y][x]) or not self.image then
+        local moveToX = self.x+xmove+x-1
+        local moveToY = self.y+ymove+y-1
+        if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
+        local tile = tilemap:getTile(moveToX, moveToY)
+        if (not tile) or tile.solid then canMove = false end
+      end
     end
   end
   if canMove then
@@ -201,7 +203,12 @@ elements = {
     DRAW = function(self)
       if not self.image then
         self.image = paintutils.loadImage(self.path)
-        self.w = #self.image[1]
+        self.w = 1
+        for y = 1, #self.image do
+          if #self.image[y] > self.w then
+            self.w = #self.image[y]
+          end
+        end
         self.h = #self.image
       end
       paintutils.drawImage(self.image, self.x, self.y)
@@ -226,7 +233,7 @@ runProtected = function(func)
 end
 update = function(elements, wantedDt, func)
   runProtected(function()
-  local timer = os.startTimer(wantedDt)
+  local timer = os.startTimer(wantedDt-(os.clock()-lastUpdate))
   local event, var1, var2, var3 = os.pullEventRaw()
   if event == "terminate" then quit(true) end
   os.cancelTimer(timer)
@@ -256,7 +263,24 @@ draw = function(elements, func)
   local oldterm = term.redirect(buffer)
   term.setBackgroundColor(colors.black)
   term.clear()
+  local prioritys = {}
   for elementName, element in pairs(elements) do
+    if element.priority then
+      if element.priority == true then
+        table.insert(prioritys, element)
+      else
+        prioritys[element.priority] = element
+      end
+    end
+    if element.DRAW then
+      element:DRAW()
+    end
+    if element.draw then
+      element:draw()
+    end
+  end
+  for i = 1, #prioritys do
+    local element = prioritys[i]
     if element.DRAW then
       element:DRAW()
     end
