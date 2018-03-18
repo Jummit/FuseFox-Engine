@@ -41,18 +41,16 @@ gameElements = {
   })
 }
 
-while true do
-  -- 0.06 is the delta time we want between frames
-  engine.update(gameElements, 0.06,
-    function()
-      -- our custom update code
-      -- quit when q is pressed
-      if engine.keyboard.q then engine.quit() end
-    end
-  )
-  engine.draw(gameElements)
-end
-
+-- start the game!
+engine.run(
+  elements
+  0.06 -- delta time (time between frames)
+  function()
+    -- our custom update code
+    -- quit when q is pressed
+    if engine.keyboard.q then engine.quit() end
+  end
+)
 ```
 ## Here is the demo game in action:
 ![alt-text](https://i.imgur.com/1kixxsB.png "Demo Game")
