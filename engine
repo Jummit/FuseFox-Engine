@@ -359,6 +359,18 @@ draw = function(elements, func)
   term.redirect(oldterm)
   end)
 end
+run = function(elements, wantedDt, customUpdate, customDraw)
+  while true do
+    parallel.waitForAll(
+      function()
+        update(elements, wantedDt, customUpdate)
+      end,
+      function()
+        draw(elements, customDraw)
+      end
+    )
+  end
+end
 quit = function(hard)
   buffer.setVisible(true)
   term.setBackgroundColor(colors.black)

@@ -1269,6 +1269,9 @@ elements = {
 }
 
 while true do
-  engine.update(elements, 0.06, function() if engine.keyboard.q then engine.quit() end end)
-  engine.draw(elements)
+  engine.run(
+    elements,
+    0.06,
+    function() if engine.keyboard.q then engine.quit() end end
+  )
 end
