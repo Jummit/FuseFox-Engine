@@ -21,6 +21,7 @@ if arguments and arguments[1] then
 end
 
 -- EVENT HANDLER MODULE
+local lastEvents = {}
 local mouseKeys = {"left", "right", "other"}
 mouse = {x = 0, y = 0}
 keyboard = {lastChar = ""}
@@ -50,6 +51,7 @@ eventHandler = {
     keyboard[keys.getName(key)] = false
   end,
   char = function(char)
+    keyboard[char] = true
     keyboard.lastChar = char
     keyboard.newChar = true
   end
@@ -252,6 +254,31 @@ elements = {
       paintutils.drawImage(self.image, self.x, self.y)
     end
   }),
+  bullets = newElement({
+    moveX = 0, moveY = -1, w = 1, h = 1,
+    UPDATE = function(self)
+      local toBeRemovedBullet
+      for i = 1, #self do
+        local bullet = self[1]
+        self[i][2] = self[i][2] - 2
+        if bullet[1] == 0 or bullet[1] >= width or bullet[2] == 0 or bullet[2] >= height then
+          toBeRemovedBullet = i
+        end
+      end
+      if toBeRemovedBullet then
+        table.remove(self, toBeRemovedBullet)
+      end
+    end,
+    DRAW = function(self)
+      for i = 1, #self do
+        local bullet = self[i]
+        paintutils.drawPixel(bullet[1], bullet[2], colors.red)
+      end
+    end,
+    spawnBullet = function(self, x, y)
+      table.insert(self, {x, y})
+    end
+  }),
   template = newElement({
     UPDATE = function(self)
     end,
@@ -263,6 +290,7 @@ elements = {
 
 -- LIFECYCLE FUNCTIONS
 lastUpdate = os.clock()
+startTime = os.clock()
 runProtected = function(func)
   local succ, mess = pcall(func)
   if not succ then
