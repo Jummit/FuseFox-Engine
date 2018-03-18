@@ -43,8 +43,8 @@ gameElements = {
 
 -- start the game!
 engine.run(
-  elements
-  0.06 -- delta time (time between frames)
+  elements,
+  0.06, -- delta time (time between frames)
   function()
     -- our custom update code
     -- quit when q is pressed
