@@ -1,4 +1,4 @@
-![alt-text](https://i.imgur.com/w61ygOI.png FuseFox)
+![alt-text](https://i.imgur.com/w61ygOI.png "FuseFox")
 # FuseFox Game Engine
 A game engine for Computercraft
 
