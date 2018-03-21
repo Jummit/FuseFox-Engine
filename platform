@@ -1156,7 +1156,7 @@ elements = {
     move = {x = 0, y = 0},
     jumpHeight = 6,
     jumpedHeight = 0,
-    update = function(self)
+    timedUpdate = function(self)
       if self.x == 4 and self.y == 4 then
         gameEnded = true
       end
@@ -1188,8 +1188,7 @@ elements = {
       end
       if engine.keyboard.left or engine.keyboard.a then engine.moveTo(self, elements.tilemap, -1, 0) end
       if engine.keyboard.right or engine.keyboard.d then engine.moveTo(self, elements.tilemap, 1, 0) end
-    end,
-    timedUpdate = true
+    end
   }),
   tilemap = engine.elements.tilemap({
     tileset = {
@@ -1232,13 +1231,12 @@ elements = {
       end
       term.write("time: "..self.time)
     end,
-    update = function(self)
+    timedUpdate = function(self)
       self.red = not self.red
       if not gameEnded then
         self.time = self.time+0.1
       end
-    end,
-    timedUpdate = true
+    end
   },
   hint = {
     draw = function()

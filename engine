@@ -320,10 +320,11 @@ updateGame = function(elements, func, timedUpdate)
     if element.UPDATE then
       element:UPDATE()
     end
-    if timedUpdate or not element.timedUpdate then
-      if element.update then
-        element:update()
-      end
+    if element.update then
+      element:update()
+    end
+    if element.timedUpdate and timedUpdate then
+      element:timedUpdate()
     end
   end
   if func then func() end
