@@ -373,11 +373,11 @@ draw = function(elements, func)
   term.redirect(oldterm)
   end)
 end
-run = function(elements, wantedDt, customUpdate, customDraw)
+run = function(elements, dt, customUpdate, customDraw)
   while true do
     parallel.waitForAll(
       function()
-        update(elements, wantedDt, customUpdate)
+        update(elements, dt, customUpdate)
       end,
       function()
         draw(elements, customDraw)
@@ -391,7 +391,7 @@ quit = function(hard)
   term.setTextColor(colors.yellow)
   term.clear()
   term.setCursorPos(1, 1)
-  print("Thanks for using the Pinwyn Game Engine by Jummit!")
+  print("Thanks for using the FuseFox Game Engine by Jummit!")
   if type(hard) == "string" then
     print("The game crashed! Here is the error:")
     term.setTextColor(colors.red)
