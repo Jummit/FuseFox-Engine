@@ -1169,7 +1169,7 @@ elements = {
         self.jumpedHeight = self.jumpedHeight + 1
         if self.jumpedHeight<self.jumpHeight then
           jumped = true
-          if not engine.moveTo(self, elements.tilemap, 0, -1) then
+          if not self:moveTo(elements.tilemap, 0, -1) then
             self.jumpedHeight = self.jumpHeight
           end
         end
@@ -1184,10 +1184,10 @@ elements = {
         self.image[1][1] = 1
       end
       if not jumped then
-        engine.moveTo(self, elements.tilemap, 0, 1)
+        self:moveTo(elements.tilemap, 0, 1)
       end
-      if engine.keyboard.left or engine.keyboard.a then engine.moveTo(self, elements.tilemap, -1, 0) end
-      if engine.keyboard.right or engine.keyboard.d then engine.moveTo(self, elements.tilemap, 1, 0) end
+      if engine.keyboard.left or engine.keyboard.a then self:moveTo(elements.tilemap, -1, 0) end
+      if engine.keyboard.right or engine.keyboard.d then self:moveTo(elements.tilemap, 1, 0) end
     end
   }),
   tilemap = engine.elements.tilemap({

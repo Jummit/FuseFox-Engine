@@ -79,37 +79,44 @@ end
 
 
 -- ELEMENT MODULE
-moveTo = function(self, tilemap, xmove, ymove)
-  local couldMove = true
-  for move = 1, math.abs(xmove)+math.abs(ymove) do
-    local canMove = true
-    for x = 1, self.w do
-      for y = 1, self.h do
-        if (self.image and self.image[y][x]) or not self.image then
-          local moveToX = self.x+xmove+x-1
-          local moveToY = self.y+ymove+y-1
-          if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
-          local tile = tilemap:getTile(moveToX, moveToY)
-          if (not tile) or tile.solid then couldMove = false canMove = false end
-        end
-      end
-    end
-    if canMove then
-      self.x = self.x + xmove
-      self.y = self.y + ymove
-    end
-  end
-  return couldMove
-end
-isBoxClicked = function(box)
-  return mouse.isDown and box.x<=mouse.x and box.y<=mouse.y and box.x+box.w>mouse.x and box.y+box.h>mouse.y
-end
+
 newElement = function(elementTab)
   return function(tab)
     return setmetatable(
       tab,
       {
-        __index = elementTab
+        __index = setmetatable(
+          elementTab,
+          {
+            __index = {
+              moveTo = function(self, tilemap, xmove, ymove)
+                local couldMove = true
+                for move = 1, math.abs(xmove)+math.abs(ymove) do
+                  local canMove = true
+                  for x = 1, self.w do
+                    for y = 1, self.h do
+                      if (self.image and self.image[y][x]) or not self.image then
+                        local moveToX = self.x+xmove+x-1
+                        local moveToY = self.y+ymove+y-1
+                        if moveToX < 1 or moveToX > width or moveToY < 1 or moveToY > height then canMove = false end
+                        local tile = tilemap:getTile(moveToX, moveToY)
+                        if (not tile) or tile.solid then couldMove = false canMove = false end
+                      end
+                    end
+                  end
+                  if canMove then
+                    self.x = self.x + xmove
+                    self.y = self.y + ymove
+                  end
+                end
+                return couldMove
+              end,
+              isClicked = function(self)
+                return mouse.isDown and self.x<=mouse.x and self.y<=mouse.y and self.x+self.w>mouse.x and self.y+self.h>mouse.y
+              end
+            }
+          }
+        )
       }
     )
   end
@@ -218,7 +225,7 @@ elements = {
   }),
   button = newElement({
     UPDATE = function(self)
-      if isBoxClicked(self) then
+      if self:isClicked() then
         if not self.clicked and self.clickedFunction then self:clickedFunction() end
         self.clicked = true
       else
