@@ -1188,7 +1188,8 @@ elements = {
       end
       if engine.keyboard.left or engine.keyboard.a then engine.moveTo(self, elements.tilemap, -1, 0) end
       if engine.keyboard.right or engine.keyboard.d then engine.moveTo(self, elements.tilemap, 1, 0) end
-    end
+    end,
+    timedUpdate = true
   }),
   tilemap = engine.elements.tilemap({
     tileset = {
@@ -1236,7 +1237,8 @@ elements = {
       if not gameEnded then
         self.time = self.time+0.1
       end
-    end
+    end,
+    timedUpdate = true
   },
   hint = {
     draw = function()
@@ -1268,10 +1270,8 @@ elements = {
   }
 }
 
-while true do
-  engine.run(
-    elements,
-    0.06,
-    function() if engine.keyboard.q then engine.quit() end end
-  )
-end
+engine.run(
+  elements,
+  0.1,
+  function() if engine.keyboard.q then engine.quit() end end
+)
