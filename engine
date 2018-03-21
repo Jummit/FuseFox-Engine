@@ -1,5 +1,4 @@
 width, height = term.getSize()
-
 local arguments = {...}
 if arguments and arguments[1] then
   local outputPath = arguments[2] or arguments[1]..".pin"
@@ -77,9 +76,7 @@ dynamicLight.lightPixel = function(self, x, y)
   end
 end
 
-
 -- ELEMENT MODULE
-
 newElement = function(elementTab)
   return function(tab)
     return setmetatable(
@@ -203,6 +200,7 @@ elements = {
             self.light[x] = {}
           end
         end
+        if server then print("generated tilemap") end
       end
       if self.dynamicLight then
         for x = 1, 3 do
@@ -294,6 +292,53 @@ elements = {
   }),
 }
 
+-- MULTIPLAYER MODULE
+function getVarsOfTable(tab)
+  local returnTab = {}
+  for k, v in pairs(tab) do
+    if type(v) == "string" or type(v) == "number" then
+      returnTab[k] = v
+    elseif type(v) == "table" then
+      returnTab[k] = getVarsOfTable(v)
+    end
+  end
+  return returnTab
+end
+function implementVarsInTable(tab, vars)
+  for k, v in pairs(vars) do
+    if type(v) == "string" or type(v) == "number" then
+      tab[k] = v
+    elseif type(v) == "table" then
+      if not tab[k] then
+        tab[k] = v
+      else
+        tab[k] = implementVarsInTable(tab[k], v)
+      end
+    end
+  end
+  return tab
+end
+mode = 2
+online = true
+if mode == 0 then
+  server = true
+  client = false
+elseif mode == 2 then
+  server = true
+  client = true
+  online = false
+else
+  server = false
+  client = true
+end
+if online then
+  rednet.open("back")
+end
+if server and online then
+  print("started server")
+  rednet.host("server", "server")
+end
+
 
 -- LIFECYCLE FUNCTIONS
 updateTimer = os.startTimer(0.1)
@@ -311,14 +356,41 @@ update = function(elements, dt, func)
   if event == "terminate" then quit(true) end
   os.cancelTimer(timer)
 
-  if event ~= "mouse_drag" then mouse.isDragged = false end
-  if event ~= "char" then keyboard.newChar = false end
-  if eventHandler[event] then eventHandler[event](var1, var2, var3) end
-  if event == "timer" and var1 == updateTimer then
-    updateTimer = os.startTimer(dt)
-    updateGame(elements, func, true)
-  else
-    updateGame(elements, func)
+  if client then
+    if event ~= "mouse_drag" then mouse.isDragged = false end
+    if event ~= "char" then keyboard.newChar = false end
+    if eventHandler[event] then eventHandler[event](var1, var2, var3) end
+    if event == "rednet_message" then
+      if var3 == "sendElements" then
+        local sendElements = textutils.unserialize(var2)
+        implementVarsInTable(elements, sendElements)
+      end
+    elseif event ~= "timer" and event ~= "modem_message" then
+      if online then
+        rednet.broadcast(textutils.serialize({event = event, var1=var1, var2= var2, var3=var3}), "sendEvent")
+      end
+    end
+  end
+  if server then
+    if event == "rednet_message" then
+      if var3 == "sendEvent" then
+        local message = textutils.unserialize(var2)
+        local event, var1, var2, var3 = message.event, message.var1, message.var2 or "", message.var3 or ""
+        print("Got events from "..var1..": ", event, var1, var2, var3)
+        if eventHandler[event] then eventHandler[event](var1, var2, var3) end
+        if event ~= "mouse_drag" then mouse.isDragged = false end
+        if event ~= "char" then keyboard.newChar = false end
+      end
+    end
+    if event == "timer" and var1 == updateTimer then
+      updateTimer = os.startTimer(dt)
+      updateGame(elements, func, true)
+      if online then
+        rednet.broadcast(textutils.serialize(getVarsOfTable(elements)), "sendElements")
+      end
+    else
+      updateGame(elements, func)
+    end
   end
   end)
 end
@@ -339,38 +411,40 @@ end
 buffer = window.create(term.current(), 1, 1, width, height)
 draw = function(elements, func)
   runProtected(function()
-  buffer.setVisible(false)
-  local oldterm = term.redirect(buffer)
-  term.setBackgroundColor(colors.black)
-  term.clear()
-  local prioritys = {}
-  for elementName, element in pairs(elements) do
-    if element.priority then
-      if element.priority == true then
-        table.insert(prioritys, element)
-      else
-        prioritys[element.priority] = element
+  if client or server then
+    buffer.setVisible(false)
+    local oldterm = term.redirect(buffer)
+    term.setBackgroundColor(colors.black)
+    term.clear()
+    local prioritys = {}
+    for elementName, element in pairs(elements) do
+      if element.priority then
+        if element.priority == true then
+          table.insert(prioritys, element)
+        else
+          prioritys[element.priority] = element
+        end
+      end
+      if element.DRAW then
+        element:DRAW()
+      end
+      if element.draw then
+        element:draw()
       end
     end
-    if element.DRAW then
-      element:DRAW()
+    for i = 1, #prioritys do
+      local element = prioritys[i]
+      if element.DRAW then
+        element:DRAW()
+      end
+      if element.draw then
+        element:draw()
+      end
     end
-    if element.draw then
-      element:draw()
-    end
+    if func then func() end
+    buffer.setVisible(true)
+    term.redirect(oldterm)
   end
-  for i = 1, #prioritys do
-    local element = prioritys[i]
-    if element.DRAW then
-      element:DRAW()
-    end
-    if element.draw then
-      element:draw()
-    end
-  end
-  if func then func() end
-  buffer.setVisible(true)
-  term.redirect(oldterm)
   end)
 end
 run = function(elements, dt, customUpdate, customDraw)
@@ -385,19 +459,17 @@ run = function(elements, dt, customUpdate, customDraw)
     )
   end
 end
-quit = function(hard)
+quit = function(err)
   buffer.setVisible(true)
   term.setBackgroundColor(colors.black)
   term.setTextColor(colors.yellow)
   term.clear()
   term.setCursorPos(1, 1)
   print("Thanks for using the FuseFox Game Engine by Jummit!")
-  if type(hard) == "string" then
+  if err then
     print("The game crashed! Here is the error:")
     term.setTextColor(colors.red)
-    print(hard)
-  elseif hard then
-    print("The game was forcefully closed")
+    print(err)
   else
     print("The game was closed without any errors")
   end
