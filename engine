@@ -289,7 +289,7 @@ elements = {
 
 
 -- LIFECYCLE FUNCTIONS
-lastUpdate = os.clock()
+updateTimer = os.startTimer(0.1)
 startTime = os.clock()
 runProtected = function(func)
   local succ, mess = pcall(func)
@@ -297,9 +297,9 @@ runProtected = function(func)
     quit(mess)
   end
 end
-update = function(elements, wantedDt, func)
+update = function(elements, dt, func)
   runProtected(function()
-  local timer = os.startTimer(wantedDt-(os.clock()-lastUpdate))
+  timer = os.startTimer(dt)
   local event, var1, var2, var3 = os.pullEventRaw()
   if event == "terminate" then quit(true) end
   os.cancelTimer(timer)
@@ -307,20 +307,26 @@ update = function(elements, wantedDt, func)
   if event ~= "mouse_drag" then mouse.isDragged = false end
   if event ~= "char" then keyboard.newChar = false end
   if eventHandler[event] then eventHandler[event](var1, var2, var3) end
-
-  if os.clock()-lastUpdate >= wantedDt then
-    for elementName, element in pairs(elements) do
-      if element.UPDATE then
-        element:UPDATE()
-      end
+  if event == "timer" and var1 == updateTimer then
+    updateTimer = os.startTimer(dt)
+    updateGame(elements, func, true)
+  else
+    updateGame(elements, func)
+  end
+  end)
+end
+updateGame = function(elements, func, timedUpdate)
+  for elementName, element in pairs(elements) do
+    if element.UPDATE then
+      element:UPDATE()
+    end
+    if timedUpdate or not element.timedUpdate then
       if element.update then
         element:update()
       end
     end
-    if func then func() end
-    lastUpdate = os.clock()
   end
-  end)
+  if func then func() end
 end
 buffer = window.create(term.current(), 1, 1, width, height)
 draw = function(elements, func)
